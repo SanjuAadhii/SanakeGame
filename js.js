@@ -1,0 +1,160 @@
+const gameboard = document.querySelector(".gameboard")
+const context = gameboard.getContext("2d")
+const scoreText = document.querySelector(".scrval")
+
+
+const WIDTH = gameboard.width;
+const HEIGHT = gameboard.height;
+const UNIT = 25;
+
+let foodx;
+let foody;
+let xVel = 25;
+let yVel = 0;
+let score = 0;
+let active =true;
+let started = false;
+let paused = false;
+
+
+
+let snake=[
+    {x:UNIT*3,y:0},
+    {x:UNIT*2,y:0},
+    {x:UNIT,y:0},
+    {x:0,y:0}
+]
+
+
+window.addEventListener('keydown',keyPress);
+startgame();
+function startgame()
+{
+    context.fillStyle = "#212121";
+    context.fillRect(0,0,WIDTH,HEIGHT);
+    createfood();
+    displayfood();
+    drawsnake();
+}
+function clearBoard(){
+    context.fillStyle = '#212121';
+    //fillRect(xStart,yStart,width,height)
+    context.fillRect(0,0,WIDTH,HEIGHT);
+}
+
+function createfood(){
+    foodx = Math.floor(Math.random()*WIDTH/UNIT)*UNIT
+    foody = Math.floor(Math.random()*HEIGHT/UNIT)*UNIT
+}
+
+function displayfood(){
+    context.fillStyle = "red";
+    context.fillRect(foodx,foody,UNIT,UNIT);
+
+}
+
+function drawsnake(){
+    context.fillStyle = 'aqua';
+    context.strokeStyle = '#212121';
+    snake.forEach((snakePart)=>{
+        context.fillRect(snakePart.x,snakePart.y,UNIT,UNIT)
+        context.strokeRect(snakePart.x,snakePart.y,UNIT,UNIT)
+    })
+    
+}
+
+function moveSnake(){
+  const head = {x:snake[0].x+xVel ,y:snake[0].y+yVel }
+  snake.unshift(head)
+  if(snake[0].x == foodx && snake[0].y == foody){
+    score += 1
+    scoreText.textContent=score;
+    createfood();
+  } 
+  else
+    snake.pop()
+  
+
+}
+
+function nextTick(){
+    if(active && !paused){
+        setTimeout(() => {
+            clearBoard();
+            displayfood();
+            moveSnake();
+            drawsnake();
+            checkGameOver();
+            nextTick();
+        }, 200);
+    }
+    else if(!active){
+        clearBoard();
+        context.font = "bold 50px serif";
+        context.fillStyle = "white";
+        context.textAlign = "center";
+        context.fillText("Game Over!!",WIDTH/2,HEIGHT/2)
+    }
+}
+function keyPress(event){
+    if(!started){
+        started = true;
+        nextTick();
+    }
+    //pause when space is pressed
+    if(event.keyCode===32){
+        console.log('clicked')
+        if(paused){
+            paused = false;
+            nextTick();
+        }
+        else{
+            paused = true;
+        }
+    }
+    const LEFT = 37
+    const UP = 38
+    const RIGHT = 39
+    const DOWN = 40
+
+    switch(true){
+        //left key pressed and not going right
+        case(event.keyCode==LEFT  && xVel!=UNIT):
+            xVel=-UNIT;
+            yVel = 0;
+            break;
+        //right key pressed and not going left
+        case(event.keyCode==RIGHT && xVel!=-UNIT):
+            xVel=UNIT;
+            yVel=0;
+            break;
+        //Up key pressed and not going down
+        case(event.keyCode==UP && yVel!=UNIT):
+            xVel=0;
+            yVel=-UNIT;
+            break;
+        //down key pressed and not going up
+        case(event.keyCode==DOWN && yVel!=-UNIT):
+            xVel=0;
+            yVel=UNIT;
+            break;
+
+    }
+}
+
+function checkGameOver(){
+    switch(true){
+        case(snake[0].x<0):
+        case(snake[0].x>=WIDTH):
+        case(snake[0].y<0):
+        case(snake[0].y>=HEIGHT):
+            active=false;
+            break;
+    }
+	//check snake head collision with snake body
+	   for(let i = 1; i < snake.length; i+=1){
+        if(snake[i].x == snake[0].x && snake[i].y == snake[0].y){
+            active = false;
+        }
+    }
+}

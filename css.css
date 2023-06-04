@@ -1,0 +1,15 @@
+*{
+    background-color: bisque;
+    padding:0;
+    text-align: center;
+}
+
+canvas{
+    
+    border: solid;
+
+}
+
+.msg{
+    padding-bottom: 5px;
+}
